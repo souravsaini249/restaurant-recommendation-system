@@ -3,6 +3,7 @@
 An AI-powered restaurant recommendation system that combines customer reviews, ratings, and popularity to suggest personalized dining experiences. Built with Python, Streamlit, and machine learning.
 
 This application is deployed to Streamlit which can be accessed via: https://restaurantrecommendations.streamlit.app/
+The dataset has been collected from Kaggle which can be accessed via: https://www.kaggle.com/datasets/joebeachcapital/restaurant-reviews/data
 
 
 ## ✨ Features
