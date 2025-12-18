@@ -6,6 +6,12 @@ import streamlit as st
 from src.config import PATHS
 from src.components.plotting import plot_rating_distribution, plot_top_restaurants_by_reviews
 from src.components.ui_helpers import render_kpis
+import traceback
+
+
+def _ensure_file(p):
+    if not p.exists():
+        raise FileNotFoundError(f"Required file not found: {p}")
 
 
 @st.cache_data(show_spinner="Loading dataset...")
@@ -21,8 +27,17 @@ def main():
     st.markdown("Understand the dataset through visualizations and key metrics.")
 
     # Load data
-    with st.spinner("Loading data..."):
-        df_clean, profiles = load_data()
+    try:
+        _ensure_file(PATHS.CLEAN_PARQUET)
+        _ensure_file(PATHS.PROFILES_PARQUET)
+        with st.spinner("Loading data..."):
+            df_clean, profiles = load_data()
+    except Exception as e:
+        st.error("Failed to load dataset for EDA.")
+        st.exception(e)
+        st.text("Full traceback:")
+        st.text(traceback.format_exc())
+        return
 
     # Key metrics
     st.header("📈 Key Metrics")

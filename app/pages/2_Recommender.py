@@ -6,6 +6,12 @@ import streamlit as st
 from src.config import CFG, PATHS
 from src.recommender import load_model, recommend_from_preferences, recommend_similar_restaurants
 from src.components.ui_helpers import render_reco_table
+import traceback
+
+
+def _ensure_file(p):
+    if not p.exists():
+        raise FileNotFoundError(f"Required file not found: {p}")
 
 
 @st.cache_data(show_spinner="Loading processed data...")
@@ -26,9 +32,22 @@ def main():
     st.title("🎯 Restaurant Recommender")
     st.markdown("Find restaurants tailored to your tastes using AI-powered recommendations.")
 
-    # Load data
-    profiles, corpus = load_processed()
-    vectorizer, tfidf_matrix, index = load_artifacts()
+    # Load data with explicit checks and clearer errors
+    try:
+        _ensure_file(PATHS.PROFILES_PARQUET)
+        _ensure_file(PATHS.CORPUS_PARQUET)
+        _ensure_file(PATHS.TFIDF_VECTORIZER)
+        _ensure_file(PATHS.TFIDF_MATRIX)
+        _ensure_file(PATHS.RESTAURANT_INDEX)
+
+        profiles, corpus = load_processed()
+        vectorizer, tfidf_matrix, index = load_artifacts()
+    except Exception as e:
+        st.error("Failed to load required data or model artifacts.")
+        st.exception(e)
+        st.text("Full traceback:")
+        st.text(traceback.format_exc())
+        return
 
     # Sidebar settings
     st.sidebar.header("⚙️ Settings")

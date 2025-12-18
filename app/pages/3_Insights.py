@@ -6,6 +6,12 @@ import streamlit as st
 
 from src.config import PATHS
 from src.recommender import load_model
+import traceback
+
+
+def _ensure_file(p):
+    if not p.exists():
+        raise FileNotFoundError(f"Required file not found: {p}")
 
 
 @st.cache_data(show_spinner="Loading corpus data...")
@@ -25,8 +31,20 @@ def main():
     st.markdown("Understand why restaurants are recommended by exploring their key characteristics.")
 
     # Load data
-    corpus_df = load_corpus()
-    vectorizer, tfidf_matrix, index = load_artifacts()
+    try:
+        _ensure_file(PATHS.CORPUS_PARQUET)
+        _ensure_file(PATHS.TFIDF_VECTORIZER)
+        _ensure_file(PATHS.TFIDF_MATRIX)
+        _ensure_file(PATHS.RESTAURANT_INDEX)
+
+        corpus_df = load_corpus()
+        vectorizer, tfidf_matrix, index = load_artifacts()
+    except Exception as e:
+        st.error("Failed to load corpus or model artifacts for Insights.")
+        st.exception(e)
+        st.text("Full traceback:")
+        st.text(traceback.format_exc())
+        return
 
     # Restaurant selection
     restaurant_list = sorted([r for r in corpus_df["Restaurant"].astype(str).unique() if r in index])
