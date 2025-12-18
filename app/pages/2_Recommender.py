@@ -42,6 +42,25 @@ def main():
 
         profiles, corpus = load_processed()
         vectorizer, tfidf_matrix, index = load_artifacts()
+    except FileNotFoundError:
+        # Attempt to build pipeline automatically if artifacts are missing
+        st.info("Required artifacts missing — attempting to build pipeline now. This may take a few minutes.")
+        try:
+            from src.pipeline_build import main as build_pipeline
+
+            with st.spinner("Building data pipeline and training TF-IDF..."):
+                build_pipeline()
+
+            # Re-run load after building
+            profiles, corpus = load_processed()
+            vectorizer, tfidf_matrix, index = load_artifacts()
+            st.success("Pipeline built and artifacts are now available.")
+        except Exception as e:
+            st.error("Failed to build pipeline automatically. Check logs and try running `python -m src.pipeline_build` locally.")
+            st.exception(e)
+            st.text("Full traceback:")
+            st.text(traceback.format_exc())
+            return
     except Exception as e:
         st.error("Failed to load required data or model artifacts.")
         st.exception(e)

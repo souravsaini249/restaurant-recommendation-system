@@ -32,6 +32,24 @@ def main():
         _ensure_file(PATHS.PROFILES_PARQUET)
         with st.spinner("Loading data..."):
             df_clean, profiles = load_data()
+    except FileNotFoundError:
+        st.info("Processed data missing — attempting to build pipeline now. This may take a few minutes.")
+        try:
+            from src.pipeline_build import main as build_pipeline
+
+            with st.spinner("Building data pipeline and training TF-IDF..."):
+                build_pipeline()
+
+            # Re-load after building
+            with st.spinner("Loading data..."):
+                df_clean, profiles = load_data()
+            st.success("Pipeline built and data loaded.")
+        except Exception as e:
+            st.error("Failed to build pipeline automatically. Run `python -m src.pipeline_build` locally and try again.")
+            st.exception(e)
+            st.text("Full traceback:")
+            st.text(traceback.format_exc())
+            return
     except Exception as e:
         st.error("Failed to load dataset for EDA.")
         st.exception(e)
