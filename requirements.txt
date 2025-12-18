@@ -21,3 +21,6 @@ jupyter>=1.0,<2.0
 
 # Testing
 pytest>=8.0,<9.0
+
+# Install local package so 'src' and 'app' are importable in deployed environment
+-e .
